@@ -267,7 +267,7 @@ int main()
 	fwrite(&subChunk1Size, sizeof(eU32), 1, fp1);
 	eU16 audioFormat = 1; // PCM
 	fwrite(&audioFormat, sizeof(eU16), 1, fp1);
-	eU16 numChannels = 1; // mono
+	eU16 numChannels = 2; // stereo
 	fwrite(&numChannels, sizeof(eU16), 1, fp1);
 	eU32 sampleRateU32 = sampleRate;
 	fwrite(&sampleRateU32, sizeof(eU32), 1, fp1);
