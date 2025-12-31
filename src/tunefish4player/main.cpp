@@ -193,7 +193,7 @@ int main()
 	eTfPlayerInit(player);
 	eTfPlayerSetSampleRate(player, sampleRate);
 	eTfPlayerLoadSong(player, song, sizeof(song), 0.0f);
-	player.volume = 0.1f;
+	player.volume = 1.0f;
 
   /* THE FOLLOWING IS FOR BACKWARD PLAYBACK!
 	// Calculate Buffer with everything except base and snare
