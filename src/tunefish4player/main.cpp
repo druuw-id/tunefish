@@ -253,7 +253,7 @@ int main()
 	eS16 *songBuffer = nullptr;
 	const eF32 songLength = eTfPlayerGetSongLength(player);
 	eU32 songSamples = eTfPlayerRecordToBuffer(player, songLength, &songBuffer);
-	eTfPlayerReverseBuffer(songBuffer, songSamples);
+	// eTfPlayerReverseBuffer(songBuffer, songSamples);
 
 	FILE *fp1 = fopen("test--2-notes.wav", "wb");
 
