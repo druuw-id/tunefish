@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(lldb) Launch TuneFish4Player",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/.build/src/tunefish4player/TuneFish4Player",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/.build/src/tunefish4player",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb",
+        }
+    ]
+}
