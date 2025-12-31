@@ -1,33 +1,24 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE framework.
-   Copyright (c) Raw Material Software Limited
+   This file is part of the JUCE library.
+   Copyright (c) 2020 - Raw Material Software Limited
 
-   JUCE is an open source framework subject to commercial or open source
+   JUCE is an open source library subject to commercial or open-source
    licensing.
 
-   By downloading, installing, or using the JUCE framework, or combining the
-   JUCE framework with any other source code, object code, content or any other
-   copyrightable work, you agree to the terms of the JUCE End User Licence
-   Agreement, and all incorporated terms including the JUCE Privacy Policy and
-   the JUCE Website Terms of Service, as applicable, which will bind you. If you
-   do not agree to the terms of these agreements, we will not license the JUCE
-   framework to you, and you must discontinue the installation or download
-   process and cease use of the JUCE framework.
+   By using JUCE, you agree to the terms of both the JUCE 6 End-User License
+   Agreement and JUCE Privacy Policy (both effective as of the 16th June 2020).
 
-   JUCE End User Licence Agreement: https://juce.com/legal/juce-8-licence/
-   JUCE Privacy Policy: https://juce.com/juce-privacy-policy
-   JUCE Website Terms of Service: https://juce.com/juce-website-terms-of-service/
+   End User License Agreement: www.juce.com/juce-6-licence
+   Privacy Policy: www.juce.com/juce-privacy-policy
 
-   Or:
+   Or: You may also use this code under the terms of the GPL v3 (see
+   www.gnu.org/licenses).
 
-   You may also use this code under the terms of the AGPLv3:
-   https://www.gnu.org/licenses/agpl-3.0.en.html
-
-   THE JUCE FRAMEWORK IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL
-   WARRANTIES, WHETHER EXPRESSED OR IMPLIED, INCLUDING WARRANTY OF
-   MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, ARE DISCLAIMED.
+   JUCE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL WARRANTIES, WHETHER
+   EXPRESSED OR IMPLIED, INCLUDING MERCHANTABILITY AND FITNESS FOR PURPOSE, ARE
+   DISCLAIMED.
 
   ==============================================================================
 */
@@ -76,25 +67,25 @@ namespace AiffFileHelpers
         Loop sustainLoop;
         Loop releaseLoop;
 
-        void copyTo (std::map<String, String>& values) const
+        void copyTo (StringPairArray& values) const
         {
-            values.emplace ("MidiUnityNote",        String (baseNote));
-            values.emplace ("Detune",               String (detune));
+            values.set ("MidiUnityNote",        String (baseNote));
+            values.set ("Detune",               String (detune));
 
-            values.emplace ("LowNote",              String (lowNote));
-            values.emplace ("HighNote",             String (highNote));
-            values.emplace ("LowVelocity",          String (lowVelocity));
-            values.emplace ("HighVelocity",         String (highVelocity));
+            values.set ("LowNote",              String (lowNote));
+            values.set ("HighNote",             String (highNote));
+            values.set ("LowVelocity",          String (lowVelocity));
+            values.set ("HighVelocity",         String (highVelocity));
 
-            values.emplace ("Gain",                 String ((int16) ByteOrder::swapIfLittleEndian ((uint16) gain)));
+            values.set ("Gain",                 String ((int16) ByteOrder::swapIfLittleEndian ((uint16) gain)));
 
-            values.emplace ("NumSampleLoops",       String (2));        // always 2 with AIFF, WAV can have more
-            values.emplace ("Loop0Type",            String (ByteOrder::swapIfLittleEndian (sustainLoop.type)));
-            values.emplace ("Loop0StartIdentifier", String (ByteOrder::swapIfLittleEndian (sustainLoop.startIdentifier)));
-            values.emplace ("Loop0EndIdentifier",   String (ByteOrder::swapIfLittleEndian (sustainLoop.endIdentifier)));
-            values.emplace ("Loop1Type",            String (ByteOrder::swapIfLittleEndian (releaseLoop.type)));
-            values.emplace ("Loop1StartIdentifier", String (ByteOrder::swapIfLittleEndian (releaseLoop.startIdentifier)));
-            values.emplace ("Loop1EndIdentifier",   String (ByteOrder::swapIfLittleEndian (releaseLoop.endIdentifier)));
+            values.set ("NumSampleLoops",       String (2));        // always 2 with AIFF, WAV can have more
+            values.set ("Loop0Type",            String (ByteOrder::swapIfLittleEndian (sustainLoop.type)));
+            values.set ("Loop0StartIdentifier", String (ByteOrder::swapIfLittleEndian (sustainLoop.startIdentifier)));
+            values.set ("Loop0EndIdentifier",   String (ByteOrder::swapIfLittleEndian (sustainLoop.endIdentifier)));
+            values.set ("Loop1Type",            String (ByteOrder::swapIfLittleEndian (releaseLoop.type)));
+            values.set ("Loop1StartIdentifier", String (ByteOrder::swapIfLittleEndian (releaseLoop.startIdentifier)));
+            values.set ("Loop1EndIdentifier",   String (ByteOrder::swapIfLittleEndian (releaseLoop.endIdentifier)));
         }
 
         static uint16 getValue16 (const StringPairArray& values, const char* name, const char* def)
@@ -158,7 +149,7 @@ namespace AiffFileHelpers
             input.read (unknown, sizeof (unknown));
         }
 
-        void addToMetadata (std::map<String, String>& metadata) const
+        void addToMetadata (StringPairArray& metadata) const
         {
             const bool rootNoteSet = rootNote != 0;
 
@@ -166,11 +157,11 @@ namespace AiffFileHelpers
             setBoolFlag (metadata, AiffAudioFormat::appleRootSet, rootNoteSet);
 
             if (rootNoteSet)
-                metadata.emplace (AiffAudioFormat::appleRootNote,   String (rootNote));
+                metadata.set (AiffAudioFormat::appleRootNote,   String (rootNote));
 
-            metadata.emplace (AiffAudioFormat::appleBeats,          String (numBeats));
-            metadata.emplace (AiffAudioFormat::appleDenominator,    String (timeSigDen));
-            metadata.emplace (AiffAudioFormat::appleNumerator,      String (timeSigNum));
+            metadata.set (AiffAudioFormat::appleBeats,          String (numBeats));
+            metadata.set (AiffAudioFormat::appleDenominator,    String (timeSigDen));
+            metadata.set (AiffAudioFormat::appleNumerator,      String (timeSigNum));
 
             const char* keyString = nullptr;
 
@@ -184,14 +175,12 @@ namespace AiffFileHelpers
             }
 
             if (keyString != nullptr)
-                metadata.emplace (AiffAudioFormat::appleKey, keyString);
+                metadata.set (AiffAudioFormat::appleKey, keyString);
         }
 
-        void setBoolFlag (std::map<String, String>& values,
-                          const char* name,
-                          bool shouldBeSet) const
+        void setBoolFlag (StringPairArray& values, const char* name, bool shouldBeSet) const
         {
-            values.emplace (name, shouldBeSet ? "1" : "0");
+            values.set (name, shouldBeSet ? "1" : "0");
         }
 
         uint32 flags;
@@ -391,24 +380,13 @@ namespace AiffFileHelpers
 }
 
 //==============================================================================
-class AiffAudioFormatReader final : public AudioFormatReader
+class AiffAudioFormatReader  : public AudioFormatReader
 {
 public:
     AiffAudioFormatReader (InputStream* in)
         : AudioFormatReader (in, aiffFormatName)
     {
         using namespace AiffFileHelpers;
-
-        std::map<String, String> metadataValuesMap;
-
-        for (int i = 0; i != metadataValues.size(); ++i)
-        {
-            metadataValuesMap.emplace (metadataValues.getAllKeys().getReference (i),
-                                       metadataValues.getAllValues().getReference (i));
-        }
-
-        // If this fails, there were duplicate keys in the metadata
-        jassert ((size_t) metadataValuesMap.size() == (size_t) metadataValues.size());
 
         if (input->readInt() == chunkName ("FORM"))
         {
@@ -501,8 +479,8 @@ public:
                         auto numCues = (uint16) input->readShortBigEndian();
 
                         // these two are always the same for AIFF-read files
-                        metadataValuesMap.emplace ("NumCuePoints", String (numCues));
-                        metadataValuesMap.emplace ("NumCueLabels", String (numCues));
+                        metadataValues.set ("NumCuePoints", String (numCues));
+                        metadataValues.set ("NumCueLabels", String (numCues));
 
                         for (uint16 i = 0; i < numCues; ++i)
                         {
@@ -519,18 +497,18 @@ public:
                                 input->readByte();
 
                             auto prefixCue = "Cue" + String (i);
-                            metadataValuesMap.emplace (prefixCue + "Identifier", String (identifier));
-                            metadataValuesMap.emplace (prefixCue + "Offset", String (offset));
+                            metadataValues.set (prefixCue + "Identifier", String (identifier));
+                            metadataValues.set (prefixCue + "Offset", String (offset));
 
                             auto prefixLabel = "CueLabel" + String (i);
-                            metadataValuesMap.emplace (prefixLabel + "Identifier", String (identifier));
-                            metadataValuesMap.emplace (prefixLabel + "Text", textBlock.toString());
+                            metadataValues.set (prefixLabel + "Identifier", String (identifier));
+                            metadataValues.set (prefixLabel + "Text", textBlock.toString());
                         }
                     }
                     else if (type == chunkName ("COMT"))
                     {
                         auto numNotes = (uint16) input->readShortBigEndian();
-                        metadataValuesMap.emplace ("NumCueNotes", String (numNotes));
+                        metadataValues.set ("NumCueNotes", String (numNotes));
 
                         for (uint16 i = 0; i < numNotes; ++i)
                         {
@@ -542,9 +520,9 @@ public:
                             input->readIntoMemoryBlock (textBlock, stringLength + (stringLength & 1));
 
                             auto prefix = "CueNote" + String (i);
-                            metadataValuesMap.emplace (prefix + "TimeStamp", String (timestamp));
-                            metadataValuesMap.emplace (prefix + "Identifier", String (identifier));
-                            metadataValuesMap.emplace (prefix + "Text", textBlock.toString());
+                            metadataValues.set (prefix + "TimeStamp", String (timestamp));
+                            metadataValues.set (prefix + "Identifier", String (identifier));
+                            metadataValues.set (prefix + "Text", textBlock.toString());
                         }
                     }
                     else if (type == chunkName ("INST"))
@@ -552,16 +530,16 @@ public:
                         HeapBlock<InstChunk> inst;
                         inst.calloc (jmax ((size_t) length + 1, sizeof (InstChunk)), 1);
                         input->read (inst, (int) length);
-                        inst->copyTo (metadataValuesMap);
+                        inst->copyTo (metadataValues);
                     }
                     else if (type == chunkName ("basc"))
                     {
-                        AiffFileHelpers::BASCChunk (*input).addToMetadata (metadataValuesMap);
+                        AiffFileHelpers::BASCChunk (*input).addToMetadata (metadataValues);
                     }
                     else if (type == chunkName ("cate"))
                     {
-                        metadataValuesMap.emplace (AiffAudioFormat::appleTag,
-                                                  AiffFileHelpers::CATEChunk::read (*input, length));
+                        metadataValues.set (AiffAudioFormat::appleTag,
+                                            AiffFileHelpers::CATEChunk::read (*input, length));
                     }
                     else if ((hasGotVer && hasGotData && hasGotType)
                               || chunkEnd < input->getPosition()
@@ -575,14 +553,12 @@ public:
             }
         }
 
-        if (metadataValuesMap.size() > 0)
-            metadataValuesMap.emplace ("MetaDataSource", "AIFF");
-
-        metadataValues.addMap (metadataValuesMap);
+        if (metadataValues.size() > 0)
+            metadataValues.set ("MetaDataSource", "AIFF");
     }
 
     //==============================================================================
-    bool readSamples (int* const* destSamples, int numDestChannels, int startOffsetInDestBuffer,
+    bool readSamples (int** destSamples, int numDestChannels, int startOffsetInDestBuffer,
                       int64 startSampleInFile, int numSamples) override
     {
         clearSamplesBeyondAvailableLength (destSamples, numDestChannels, startOffsetInDestBuffer,
@@ -649,7 +625,7 @@ private:
 };
 
 //==============================================================================
-class AiffAudioFormatWriter final : public AudioFormatWriter
+class AiffAudioFormatWriter  : public AudioFormatWriter
 {
 public:
     AiffAudioFormatWriter (OutputStream* out, double rate,
@@ -707,9 +683,9 @@ public:
         if (bytesWritten + bytes >= (size_t) 0xfff00000
              || ! output->write (tempBlock.getData(), bytes))
         {
-            // Failed to write to disk, so let's try writing the header.
+            // failed to write to disk, so let's try writing the header.
             // If it's just run out of disk space, then if it does manage
-            // to write the header, we'll still have a useable file.
+            // to write the header, we'll still have a useable file..
             writeHeader();
             writeFailed = true;
             return false;
@@ -730,15 +706,16 @@ private:
     {
         using namespace AiffFileHelpers;
 
-        [[maybe_unused]] const bool couldSeekOk = output->setPosition (headerPosition);
+        const bool couldSeekOk = output->setPosition (headerPosition);
+        ignoreUnused (couldSeekOk);
 
         // if this fails, you've given it an output stream that can't seek! It needs
         // to be able to seek back to write the header
         jassert (couldSeekOk);
 
-        auto headerLen = (int) (54 + (markChunk.isEmpty() ? 0 : markChunk.getSize() + 8)
-                                   + (comtChunk.isEmpty() ? 0 : comtChunk.getSize() + 8)
-                                   + (instChunk.isEmpty() ? 0 : instChunk.getSize() + 8));
+        auto headerLen = (int) (54 + (markChunk.getSize() > 0 ? markChunk.getSize() + 8 : 0)
+                                   + (comtChunk.getSize() > 0 ? comtChunk.getSize() + 8 : 0)
+                                   + (instChunk.getSize() > 0 ? instChunk.getSize() + 8 : 0));
         auto audioBytes = (int) (lengthInSamples * ((bitsPerSample * numChannels) / 8));
         audioBytes += (audioBytes & 1);
 
@@ -794,21 +771,21 @@ private:
 
         output->write (sampleRateBytes, 10);
 
-        if (! markChunk.isEmpty())
+        if (markChunk.getSize() > 0)
         {
             output->writeInt (chunkName ("MARK"));
             output->writeIntBigEndian ((int) markChunk.getSize());
             *output << markChunk;
         }
 
-        if (! comtChunk.isEmpty())
+        if (comtChunk.getSize() > 0)
         {
             output->writeInt (chunkName ("COMT"));
             output->writeIntBigEndian ((int) comtChunk.getSize());
             *output << comtChunk;
         }
 
-        if (! instChunk.isEmpty())
+        if (instChunk.getSize() > 0)
         {
             output->writeInt (chunkName ("INST"));
             output->writeIntBigEndian ((int) instChunk.getSize());
@@ -827,7 +804,7 @@ private:
 };
 
 //==============================================================================
-class MemoryMappedAiffReader final : public MemoryMappedAudioFormatReader
+class MemoryMappedAiffReader   : public MemoryMappedAudioFormatReader
 {
 public:
     MemoryMappedAiffReader (const File& f, const AiffAudioFormatReader& reader)
@@ -837,18 +814,15 @@ public:
     {
     }
 
-    bool readSamples (int* const* destSamples, int numDestChannels, int startOffsetInDestBuffer,
+    bool readSamples (int** destSamples, int numDestChannels, int startOffsetInDestBuffer,
                       int64 startSampleInFile, int numSamples) override
     {
         clearSamplesBeyondAvailableLength (destSamples, numDestChannels, startOffsetInDestBuffer,
                                            startSampleInFile, numSamples, lengthInSamples);
 
-        if (numSamples <= 0)
-            return true;
-
         if (map == nullptr || ! mappedSection.contains (Range<int64> (startSampleInFile, startSampleInFile + numSamples)))
         {
-            jassertfalse; // you must make sure that the window contains all the samples you're going to attempt to read
+            jassertfalse; // you must make sure that the window contains all the samples you're going to attempt to read.
             return false;
         }
 
@@ -870,7 +844,7 @@ public:
 
         if (map == nullptr || ! mappedSection.contains (sample))
         {
-            jassertfalse; // you must make sure that the window contains all the samples you're going to attempt to read
+            jassertfalse; // you must make sure that the window contains all the samples you're going to attempt to read.
 
             zeromem (result, (size_t) num * sizeof (float));
             return;
@@ -913,7 +887,7 @@ public:
 
         if (map == nullptr || numSamples <= 0 || ! mappedSection.contains (Range<int64> (startSampleInFile, startSampleInFile + numSamples)))
         {
-            jassert (numSamples <= 0); // you must make sure that the window contains all the samples you're going to attempt to read
+            jassert (numSamples <= 0); // you must make sure that the window contains all the samples you're going to attempt to read.
 
             for (int i = 0; i < numChannelsToRead; ++i)
                 results[i] = Range<float>();
@@ -1017,20 +991,18 @@ MemoryMappedAudioFormatReader* AiffAudioFormat::createMemoryMappedReader (FileIn
     return nullptr;
 }
 
-std::unique_ptr<AudioFormatWriter> AiffAudioFormat::createWriterFor (std::unique_ptr<OutputStream>& streamToWriteTo,
-                                                                     const AudioFormatWriterOptions& options)
+AudioFormatWriter* AiffAudioFormat::createWriterFor (OutputStream* out,
+                                                     double sampleRate,
+                                                     unsigned int numberOfChannels,
+                                                     int bitsPerSample,
+                                                     const StringPairArray& metadataValues,
+                                                     int /*qualityOptionIndex*/)
 {
-    if (streamToWriteTo == nullptr || ! getPossibleBitDepths().contains (options.getBitsPerSample()))
-        return nullptr;
+    if (out != nullptr && getPossibleBitDepths().contains (bitsPerSample))
+        return new AiffAudioFormatWriter (out, sampleRate, numberOfChannels,
+                                          (unsigned int) bitsPerSample, metadataValues);
 
-    StringPairArray metadata;
-    metadata.addUnorderedMap (options.getMetadataValues());
-
-    return std::make_unique<AiffAudioFormatWriter> (std::exchange (streamToWriteTo, {}).release(),
-                                                    options.getSampleRate(),
-                                                    (unsigned int) options.getNumChannels(),
-                                                    (unsigned int) options.getBitsPerSample(),
-                                                    metadata);
+    return nullptr;
 }
 
 } // namespace juce

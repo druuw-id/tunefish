@@ -18,7 +18,6 @@
 
 #include "oboe/Oboe.h"
 
-#include "common/OboeDebug.h"
 #include "opensles/AudioStreamBuffered.h"
 #include "common/AudioClock.h"
 
@@ -55,10 +54,9 @@ void AudioStreamBuffered::allocateFifo() {
                 capacityFrames = numBursts * getFramesPerBurst();
             }
         }
-
-        mFifoBuffer = std::make_unique<FifoBuffer>(getBytesPerFrame(), capacityFrames);
+        // TODO consider using std::make_unique if we require c++14
+        mFifoBuffer.reset(new FifoBuffer(getBytesPerFrame(), capacityFrames));
         mBufferCapacityInFrames = capacityFrames;
-        mBufferSizeInFrames = mBufferCapacityInFrames;
     }
 }
 
@@ -112,22 +110,12 @@ int64_t AudioStreamBuffered::predictNextCallbackTime() {
 
 // Common code for read/write.
 // @return Result::OK with frames read/written, or Result::Error*
-ResultWithValue<int32_t> AudioStreamBuffered::transfer(
-        void *readBuffer,
-        const void *writeBuffer,
-        int32_t numFrames,
-        int64_t timeoutNanoseconds) {
+ResultWithValue<int32_t> AudioStreamBuffered::transfer(void *buffer,
+                                      int32_t numFrames,
+                                      int64_t timeoutNanoseconds) {
     // Validate arguments.
-    if (readBuffer != nullptr && writeBuffer != nullptr) {
-        LOGE("AudioStreamBuffered::%s(): both buffers are not NULL", __func__);
-        return ResultWithValue<int32_t>(Result::ErrorInternal);
-    }
-    if (getDirection() == Direction::Input && readBuffer == nullptr) {
-        LOGE("AudioStreamBuffered::%s(): readBuffer is NULL", __func__);
-        return ResultWithValue<int32_t>(Result::ErrorNull);
-    }
-    if (getDirection() == Direction::Output && writeBuffer == nullptr) {
-        LOGE("AudioStreamBuffered::%s(): writeBuffer is NULL", __func__);
+    if (buffer == nullptr) {
+        LOGE("AudioStreamBuffered::%s(): buffer is NULL", __func__);
         return ResultWithValue<int32_t>(Result::ErrorNull);
     }
     if (numFrames < 0) {
@@ -142,8 +130,7 @@ ResultWithValue<int32_t> AudioStreamBuffered::transfer(
     }
 
     int32_t result = 0;
-    uint8_t *readData = reinterpret_cast<uint8_t *>(readBuffer);
-    const uint8_t *writeData = reinterpret_cast<const uint8_t *>(writeBuffer);
+    uint8_t *data = reinterpret_cast<uint8_t *>(buffer);
     int32_t framesLeft = numFrames;
     int64_t timeToQuit = 0;
     bool repeat = true;
@@ -157,22 +144,18 @@ ResultWithValue<int32_t> AudioStreamBuffered::transfer(
     do {
         // read or write
         if (getDirection() == Direction::Input) {
-            result = mFifoBuffer->read(readData, framesLeft);
-            if (result > 0) {
-                readData += mFifoBuffer->convertFramesToBytes(result);
-                framesLeft -= result;
-            }
+            result = mFifoBuffer->read(data, framesLeft);
         } else {
             // between zero and capacity
             uint32_t fullFrames = mFifoBuffer->getFullFramesAvailable();
             // Do not write above threshold size.
             int32_t emptyFrames = getBufferSizeInFrames() - static_cast<int32_t>(fullFrames);
             int32_t framesToWrite = std::max(0, std::min(framesLeft, emptyFrames));
-            result = mFifoBuffer->write(writeData, framesToWrite);
-            if (result > 0) {
-                writeData += mFifoBuffer->convertFramesToBytes(result);
-                framesLeft -= result;
-            }
+            result = mFifoBuffer->write(data, framesToWrite);
+        }
+        if (result > 0) {
+            data += mFifoBuffer->convertFramesToBytes(result);
+            framesLeft -= result;
         }
 
         // If we need more data then sleep and try again.
@@ -228,9 +211,8 @@ ResultWithValue<int32_t> AudioStreamBuffered::write(const void *buffer,
     if (getDirection() == Direction::Input) {
         return ResultWithValue<int32_t>(Result::ErrorUnavailable); // TODO review, better error code?
     }
-    Result result = updateServiceFrameCounter();
-    if (result != Result::OK) return ResultWithValue<int32_t>(static_cast<Result>(result));
-    return transfer(nullptr, buffer, numFrames, timeoutNanoseconds);
+    updateServiceFrameCounter();
+    return transfer(const_cast<void *>(buffer), numFrames, timeoutNanoseconds);
 }
 
 // Read data from the FIFO that was written by the callback.
@@ -244,9 +226,8 @@ ResultWithValue<int32_t> AudioStreamBuffered::read(void *buffer,
     if (getDirection() == Direction::Output) {
         return ResultWithValue<int32_t>(Result::ErrorUnavailable); // TODO review, better error code?
     }
-    Result result = updateServiceFrameCounter();
-    if (result != Result::OK) return ResultWithValue<int32_t>(static_cast<Result>(result));
-    return transfer(buffer, nullptr, numFrames, timeoutNanoseconds);
+    updateServiceFrameCounter();
+    return transfer(buffer, numFrames, timeoutNanoseconds);
 }
 
 // Only supported when we are not using a callback.
@@ -279,7 +260,7 @@ int32_t AudioStreamBuffered::getBufferCapacityInFrames() const {
 
 bool AudioStreamBuffered::isXRunCountSupported() const {
     // XRun count is only supported if we're using blocking I/O (not callbacks)
-    return (!isDataCallbackSpecified());
+    return (getCallback() == nullptr);
 }
 
 } // namespace oboe

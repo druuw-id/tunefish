@@ -19,24 +19,26 @@
 #include <sys/types.h>
 #include "FlowGraphNode.h"
 
-using namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph;
+using namespace flowgraph;
 
 /***************************************************************************/
-int32_t FlowGraphNode::pullData(int32_t numFrames, int64_t callCount) {
+int32_t FlowGraphNode::pullData(int64_t framePosition, int32_t numFrames) {
     int32_t frameCount = numFrames;
     // Prevent recursion and multiple execution of nodes.
-    if (callCount > mLastCallCount) {
-        mLastCallCount = callCount;
+    if (framePosition <= mLastFramePosition && !mBlockRecursion) {
+        mBlockRecursion = true;  // for cyclic graphs
         if (mDataPulledAutomatically) {
             // Pull from all the upstream nodes.
             for (auto &port : mInputPorts) {
                 // TODO fix bug of leaving unused data in some ports if using multiple AudioSource
-                frameCount = port.get().pullData(callCount, frameCount);
+                frameCount = port.get().pullData(framePosition, frameCount);
             }
         }
         if (frameCount > 0) {
             frameCount = onProcess(frameCount);
         }
+        mLastFramePosition += frameCount;
+        mBlockRecursion = false;
         mLastFrameCount = frameCount;
     } else {
         frameCount = mLastFrameCount;
@@ -58,7 +60,6 @@ void FlowGraphNode::pullReset() {
 
 void FlowGraphNode::reset() {
     mLastFrameCount = 0;
-    mLastCallCount = kInitialCallCount;
 }
 
 /***************************************************************************/
@@ -68,14 +69,14 @@ FlowGraphPortFloat::FlowGraphPortFloat(FlowGraphNode &parent,
         : FlowGraphPort(parent, samplesPerFrame)
         , mFramesPerBuffer(framesPerBuffer)
         , mBuffer(nullptr) {
-    size_t numFloats = static_cast<size_t>(framesPerBuffer) * getSamplesPerFrame();
+    size_t numFloats = static_cast<size_t>(framesPerBuffer * getSamplesPerFrame());
     mBuffer = std::make_unique<float[]>(numFloats);
 }
 
 /***************************************************************************/
-int32_t FlowGraphPortFloatOutput::pullData(int64_t callCount, int32_t numFrames) {
+int32_t FlowGraphPortFloatOutput::pullData(int64_t framePosition, int32_t numFrames) {
     numFrames = std::min(getFramesPerBuffer(), numFrames);
-    return mContainingNode.pullData(numFrames, callCount);
+    return mContainingNode.pullData(framePosition, numFrames);
 }
 
 void FlowGraphPortFloatOutput::pullReset() {
@@ -92,10 +93,10 @@ void FlowGraphPortFloatOutput::disconnect(FlowGraphPortFloatInput *port) {
 }
 
 /***************************************************************************/
-int32_t FlowGraphPortFloatInput::pullData(int64_t callCount, int32_t numFrames) {
+int32_t FlowGraphPortFloatInput::pullData(int64_t framePosition, int32_t numFrames) {
     return (mConnected == nullptr)
             ? std::min(getFramesPerBuffer(), numFrames)
-            : mConnected->pullData(callCount, numFrames);
+            : mConnected->pullData(framePosition, numFrames);
 }
 void FlowGraphPortFloatInput::pullReset() {
     if (mConnected != nullptr) mConnected->pullReset();
@@ -107,8 +108,4 @@ float *FlowGraphPortFloatInput::getBuffer() {
     } else {
         return mConnected->getBuffer();
     }
-}
-
-int32_t FlowGraphSink::pullData(int32_t numFrames) {
-    return FlowGraphNode::pullData(numFrames, getLastCallCount() + 1);
 }

@@ -22,7 +22,7 @@
 
 #include "FlowGraphNode.h"
 
-namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph {
+namespace flowgraph {
 
 /**
  * AudioSource that reads a block of pre-defined 24-bit packed integer data.
@@ -38,6 +38,6 @@ public:
     }
 };
 
-} /* namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph */
+} /* namespace flowgraph */
 
 #endif //FLOWGRAPH_SOURCE_I24_H

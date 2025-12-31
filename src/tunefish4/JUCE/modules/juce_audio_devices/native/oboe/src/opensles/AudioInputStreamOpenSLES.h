@@ -18,8 +18,10 @@
 #define AUDIO_INPUT_STREAM_OPENSL_ES_H_
 
 
+#include <SLES/OpenSLES.h>
+#include <SLES/OpenSLES_Android.h>
+
 #include "oboe/Oboe.h"
-#include "EngineOpenSLES.h"
 #include "AudioStreamOpenSLES.h"
 
 namespace oboe {
@@ -44,7 +46,6 @@ public:
     Result requestStop() override;
 
 protected:
-    Result requestStop_l();
 
     Result updateServiceFrameCounter() override;
 

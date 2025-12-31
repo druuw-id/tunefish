@@ -38,26 +38,11 @@
 // TODO Review use of raw pointers for connect(). Maybe use smart pointers but need to avoid
 //      run-time deallocation in audio thread.
 
-// Set flags FLOWGRAPH_ANDROID_INTERNAL and FLOWGRAPH_OUTER_NAMESPACE based on whether compiler
-// flag __ANDROID_NDK__ is defined. __ANDROID_NDK__ should be defined in oboe and not aaudio.
-
-#ifndef FLOWGRAPH_ANDROID_INTERNAL
-#ifdef __ANDROID_NDK__
+// Set this to 1 if using it inside the Android framework.
+// This code is kept here so that it can be moved easily between Oboe and AAudio.
 #define FLOWGRAPH_ANDROID_INTERNAL 0
-#else
-#define FLOWGRAPH_ANDROID_INTERNAL 1
-#endif // __ANDROID_NDK__
-#endif // FLOWGRAPH_ANDROID_INTERNAL
 
-#ifndef FLOWGRAPH_OUTER_NAMESPACE
-#ifdef __ANDROID_NDK__
-#define FLOWGRAPH_OUTER_NAMESPACE oboe
-#else
-#define FLOWGRAPH_OUTER_NAMESPACE aaudio
-#endif // __ANDROID_NDK__
-#endif // FLOWGRAPH_OUTER_NAMESPACE
-
-namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph {
+namespace flowgraph {
 
 // Default block size that can be overridden when the FlowGraphPortFloat is created.
 // If it is too small then we will have too much overhead from switching between nodes.
@@ -73,7 +58,7 @@ class FlowGraphPortFloatInput;
  */
 class FlowGraphNode {
 public:
-    FlowGraphNode() = default;
+    FlowGraphNode() {}
     virtual ~FlowGraphNode() = default;
 
     /**
@@ -86,17 +71,15 @@ public:
     virtual int32_t onProcess(int32_t numFrames) = 0;
 
     /**
-     * If the callCount is at or after the previous callCount then call
-     * pullData on all of the upstreamNodes.
-     * Then call onProcess().
+     * If the framePosition is at or after the last frame position then call onProcess().
      * This prevents infinite recursion in case of cyclic graphs.
      * It also prevents nodes upstream from a branch from being executed twice.
      *
-     * @param callCount
+     * @param framePosition
      * @param numFrames
      * @return number of frames valid
      */
-    int32_t pullData(int32_t numFrames, int64_t callCount);
+    int32_t pullData(int64_t framePosition, int32_t numFrames);
 
     /**
      * Recursively reset all the nodes in the graph, starting from a Sink.
@@ -111,7 +94,7 @@ public:
     virtual void reset();
 
     void addInputPort(FlowGraphPort &port) {
-        mInputPorts.emplace_back(port);
+        mInputPorts.push_back(port);
     }
 
     bool isDataPulledAutomatically() const {
@@ -135,14 +118,12 @@ public:
         return "FlowGraph";
     }
 
-    int64_t getLastCallCount() {
-        return mLastCallCount;
+    int64_t getLastFramePosition() {
+        return mLastFramePosition;
     }
 
 protected:
-
-    static constexpr int64_t  kInitialCallCount = -1;
-    int64_t  mLastCallCount = kInitialCallCount;
+    int64_t  mLastFramePosition = 0;
 
     std::vector<std::reference_wrapper<FlowGraphPort>> mInputPorts;
 
@@ -167,8 +148,6 @@ public:
             : mContainingNode(parent)
             , mSamplesPerFrame(samplesPerFrame) {
     }
-
-    virtual ~FlowGraphPort() = default;
 
     // Ports are often declared public. So let's make them non-copyable.
     FlowGraphPort(const FlowGraphPort&) = delete;
@@ -406,7 +385,7 @@ public:
     FlowGraphPortFloatInput input;
 
     /**
-     * Do nothing. The work happens in the read() method.
+     * Dummy processor. The work happens in the read() method.
      *
      * @param numFrames
      * @return number of frames actually processed
@@ -415,15 +394,8 @@ public:
         return numFrames;
     }
 
-    virtual int32_t read(void *data, int32_t numFrames) = 0;
+    virtual int32_t read(int64_t framePosition, void *data, int32_t numFrames) = 0;
 
-protected:
-    /**
-     * Pull data through the graph using this nodes last callCount.
-     * @param numFrames
-     * @return
-     */
-    int32_t pullData(int32_t numFrames);
 };
 
 /***************************************************************************/
@@ -445,6 +417,6 @@ public:
     FlowGraphPortFloatOutput output;
 };
 
-} /* namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph */
+} /* namespace flowgraph */
 
 #endif /* FLOWGRAPH_FLOW_GRAPH_NODE_H */

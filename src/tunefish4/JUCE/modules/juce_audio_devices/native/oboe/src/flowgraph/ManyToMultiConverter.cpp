@@ -18,7 +18,7 @@
 
 #include "ManyToMultiConverter.h"
 
-using namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph;
+using namespace flowgraph;
 
 ManyToMultiConverter::ManyToMultiConverter(int32_t channelCount)
         : inputs(channelCount)

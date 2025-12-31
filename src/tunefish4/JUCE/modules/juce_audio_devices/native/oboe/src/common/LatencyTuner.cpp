@@ -19,16 +19,13 @@
 using namespace oboe;
 
 LatencyTuner::LatencyTuner(AudioStream &stream)
-        : LatencyTuner(stream, stream.getBufferCapacityInFrames()) {
-}
+    : LatencyTuner(stream, stream.getBufferCapacityInFrames()){
+    }
 
 LatencyTuner::LatencyTuner(oboe::AudioStream &stream, int32_t maximumBufferSize)
-        : mStream(stream)
-        , mMaxBufferSize(maximumBufferSize) {
-    int32_t burstSize = stream.getFramesPerBurst();
-    setMinimumBufferSize(kDefaultNumBursts * burstSize);
-    setBufferSizeIncrement(burstSize);
-    reset();
+    : mStream(stream)
+    , mMaxBufferSize(maximumBufferSize) {
+        reset();
 }
 
 Result LatencyTuner::tune() {
@@ -58,15 +55,12 @@ Result LatencyTuner::tune() {
             if ((xRunCountResult.value() - mPreviousXRuns) > 0) {
                 mPreviousXRuns = xRunCountResult.value();
                 int32_t oldBufferSize = mStream.getBufferSizeInFrames();
-                int32_t requestedBufferSize = oldBufferSize + getBufferSizeIncrement();
+                int32_t requestedBufferSize = oldBufferSize + mStream.getFramesPerBurst();
 
                 // Do not request more than the maximum buffer size (which was either user-specified
                 // or was from stream->getBufferCapacityInFrames())
                 if (requestedBufferSize > mMaxBufferSize) requestedBufferSize = mMaxBufferSize;
 
-                // Note that this will not allocate more memory. It simply determines
-                // how much of the existing buffer capacity will be used. The size will be
-                // clipped to the bufferCapacity by AAudio.
                 auto setBufferResult = mStream.setBufferSizeInFrames(requestedBufferSize);
                 if (setBufferResult != Result::OK) {
                     result = setBufferResult;
@@ -100,7 +94,7 @@ void LatencyTuner::reset() {
     mState = State::Idle;
     mIdleCountDown = kIdleCount;
     // Set to minimal latency
-    mStream.setBufferSizeInFrames(getMinimumBufferSize());
+    mStream.setBufferSizeInFrames(2 * mStream.getFramesPerBurst());
 }
 
 bool LatencyTuner::isAtMaximumBufferSize() {

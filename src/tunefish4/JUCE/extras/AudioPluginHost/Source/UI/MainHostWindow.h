@@ -1,33 +1,24 @@
 /*
   ==============================================================================
 
-   This file is part of the JUCE framework.
-   Copyright (c) Raw Material Software Limited
+   This file is part of the JUCE library.
+   Copyright (c) 2020 - Raw Material Software Limited
 
-   JUCE is an open source framework subject to commercial or open source
+   JUCE is an open source library subject to commercial or open-source
    licensing.
 
-   By downloading, installing, or using the JUCE framework, or combining the
-   JUCE framework with any other source code, object code, content or any other
-   copyrightable work, you agree to the terms of the JUCE End User Licence
-   Agreement, and all incorporated terms including the JUCE Privacy Policy and
-   the JUCE Website Terms of Service, as applicable, which will bind you. If you
-   do not agree to the terms of these agreements, we will not license the JUCE
-   framework to you, and you must discontinue the installation or download
-   process and cease use of the JUCE framework.
+   By using JUCE, you agree to the terms of both the JUCE 6 End-User License
+   Agreement and JUCE Privacy Policy (both effective as of the 16th June 2020).
 
-   JUCE End User Licence Agreement: https://juce.com/legal/juce-8-licence/
-   JUCE Privacy Policy: https://juce.com/juce-privacy-policy
-   JUCE Website Terms of Service: https://juce.com/juce-website-terms-of-service/
+   End User License Agreement: www.juce.com/juce-6-licence
+   Privacy Policy: www.juce.com/juce-privacy-policy
 
-   Or:
+   Or: You may also use this code under the terms of the GPL v3 (see
+   www.gnu.org/licenses).
 
-   You may also use this code under the terms of the AGPLv3:
-   https://www.gnu.org/licenses/agpl-3.0.en.html
-
-   THE JUCE FRAMEWORK IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL
-   WARRANTIES, WHETHER EXPRESSED OR IMPLIED, INCLUDING WARRANTY OF
-   MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, ARE DISCLAIMED.
+   JUCE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL WARRANTIES, WHETHER
+   EXPRESSED OR IMPLIED, INCLUDING MERCHANTABILITY AND FITNESS FOR PURPOSE, ARE
+   DISCLAIMED.
 
   ==============================================================================
 */
@@ -52,42 +43,18 @@ namespace CommandIDs
     static const int aboutBox               = 0x30300;
     static const int allWindowsForward      = 0x30400;
     static const int toggleDoublePrecision  = 0x30500;
-    static const int autoScalePluginWindows = 0x30600;
 }
 
-//==============================================================================
 ApplicationCommandManager& getCommandManager();
 ApplicationProperties& getAppProperties();
 bool isOnTouchDevice();
 
 //==============================================================================
-enum class AutoScale
-{
-    scaled,
-    unscaled,
-    useDefault
-};
-
-constexpr bool autoScaleOptionAvailable =
-    #if JUCE_WINDOWS && JUCE_WIN_PER_MONITOR_DPI_AWARE
-     true;
-    #else
-     false;
-    #endif
-
-AutoScale getAutoScaleValueForPlugin (const String&);
-void setAutoScaleValueForPlugin (const String&, AutoScale);
-bool shouldAutoScalePlugin (const PluginDescription&);
-void addPluginAutoScaleOptionsSubMenu (AudioPluginInstance*, PopupMenu&);
-
-constexpr const char* processUID = "juceaudiopluginhost";
-
-//==============================================================================
-class MainHostWindow final : public DocumentWindow,
-                             public MenuBarModel,
-                             public ApplicationCommandTarget,
-                             public ChangeListener,
-                             public FileDragAndDropTarget
+class MainHostWindow    : public DocumentWindow,
+                          public MenuBarModel,
+                          public ApplicationCommandTarget,
+                          public ChangeListener,
+                          public FileDragAndDropTarget
 {
 public:
     //==============================================================================
@@ -116,23 +83,17 @@ public:
 
     void tryToQuitApplication();
 
-    void createPlugin (const PluginDescriptionAndPreference&, Point<int> pos);
+    void createPlugin (const PluginDescription&, Point<int> pos);
 
     void addPluginsToMenu (PopupMenu&);
-    std::optional<PluginDescriptionAndPreference> getChosenType (int menuID) const;
+    PluginDescription getChosenType (int menuID) const;
+
+    bool isDoublePrecisionProcessing();
+    void updatePrecisionMenuItem (ApplicationCommandInfo& info);
 
     std::unique_ptr<GraphDocumentComponent> graphHolder;
 
 private:
-    //==============================================================================
-    static bool isDoublePrecisionProcessingEnabled();
-    static bool isAutoScalePluginWindowsEnabled();
-
-    static void updatePrecisionMenuItem (ApplicationCommandInfo& info);
-    static void updateAutoScaleMenuItem (ApplicationCommandInfo& info);
-
-    void showAudioSettings();
-
     //==============================================================================
     AudioDeviceManager deviceManager;
     AudioPluginFormatManager formatManager;
@@ -140,10 +101,12 @@ private:
     std::vector<PluginDescription> internalTypes;
     KnownPluginList knownPluginList;
     KnownPluginList::SortMethod pluginSortMethod;
-    Array<PluginDescriptionAndPreference> pluginDescriptionsAndPreference;
+    Array<PluginDescription> pluginDescriptions;
 
     class PluginListWindow;
     std::unique_ptr<PluginListWindow> pluginListWindow;
+
+    void showAudioSettings();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainHostWindow)
 };

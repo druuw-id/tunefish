@@ -14,20 +14,13 @@
     <key>LSRequiresIPhoneOS</key>
     <true/>
     <key>UIViewControllerBasedStatusBarAppearance</key>
-    <true/>
+    <false/>
     <key>UILaunchStoryboardName</key>
     <string>LaunchScreen</string>
-    <key>UIApplicationSceneManifest</key>
-    <dict>
-      <key>UIApplicationSupportsMultipleScenes</key>
-      <false/>
-      <key>UISceneConfigurations</key>
-      <dict/>
-    </dict>
     <key>CFBundleExecutable</key>
     <string>${EXECUTABLE_NAME}</string>
     <key>CFBundleIdentifier</key>
-    <string>com.rmsl.jucedemorunner</string>
+    <string>com.rmsl.juce.demorunner</string>
     <key>CFBundleName</key>
     <string>DemoRunner</string>
     <key>CFBundleDisplayName</key>
@@ -37,11 +30,11 @@
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleShortVersionString</key>
-    <string>8.0.12</string>
+    <string>6.0.5</string>
     <key>CFBundleVersion</key>
-    <string>8.0.12</string>
+    <string>6.0.5</string>
     <key>NSHumanReadableCopyright</key>
-    <string>Copyright (c) - Raw Material Software Limited</string>
+    <string>Copyright (c) 2020 - Raw Material Software Limited</string>
     <key>NSHighResolutionCapable</key>
     <true/>
     <key>UIFileSharingEnabled</key>
@@ -49,13 +42,14 @@
     <key>UISupportsDocumentBrowser</key>
     <true/>
     <key>UIRequiresFullScreen</key>
-    <false/>
+    <true/>
+    <key>UIStatusBarHidden</key>
+    <true/>
     <key>UISupportedInterfaceOrientations</key>
     <array>
+      <string>UIInterfaceOrientationPortrait</string>
       <string>UIInterfaceOrientationLandscapeLeft</string>
       <string>UIInterfaceOrientationLandscapeRight</string>
-      <string>UIInterfaceOrientationPortrait</string>
-      <string>UIInterfaceOrientationPortraitUpsideDown</string>
     </array>
     <key>UIBackgroundModes</key>
     <array/>

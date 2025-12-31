@@ -22,7 +22,7 @@
 #include "common/OboeDebug.h"
 #include "oboe/AudioStream.h"
 #include "oboe/AudioStreamCallback.h"
-#include "oboe/FifoBuffer.h"
+#include "fifo/FifoBuffer.h"
 
 namespace oboe {
 
@@ -49,7 +49,7 @@ public:
 
     int32_t getBufferCapacityInFrames() const override;
 
-    ResultWithValue<int32_t> getXRunCount() override {
+    ResultWithValue<int32_t> getXRunCount() const override {
         return ResultWithValue<int32_t>(mXRunCount);
     }
 
@@ -60,7 +60,7 @@ protected:
     DataCallbackResult onDefaultCallback(void *audioData, int numFrames) override;
 
     // If there is no callback then we need a FIFO between the App and OpenSL ES.
-    bool usingFIFO() const { return !isDataCallbackSpecified(); }
+    bool usingFIFO() const { return getCallback() == nullptr; }
 
     virtual Result updateServiceFrameCounter() = 0;
 
@@ -74,11 +74,7 @@ private:
     void markCallbackTime(int32_t numFrames);
 
     // Read or write to the FIFO.
-    // Only pass one pointer and set the other to nullptr.
-    ResultWithValue<int32_t> transfer(void *readBuffer,
-            const void *writeBuffer,
-            int32_t numFrames,
-            int64_t timeoutNanoseconds);
+    ResultWithValue<int32_t> transfer(void *buffer, int32_t numFrames, int64_t timeoutNanoseconds);
 
     void incrementXRunCount() {
         ++mXRunCount;

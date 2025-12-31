@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-#include <stdint.h>
-
+#include <cassert>
+#include <sys/types.h>
+#include "FifoControllerBase.h"
 #include "FifoController.h"
 
 namespace oboe {

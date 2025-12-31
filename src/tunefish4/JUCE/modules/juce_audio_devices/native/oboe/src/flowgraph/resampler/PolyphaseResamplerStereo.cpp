@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-#include <cassert>
 #include "PolyphaseResamplerStereo.h"
 
-using namespace RESAMPLER_OUTER_NAMESPACE::resampler;
+using namespace resampler;
 
 #define STEREO  2
 

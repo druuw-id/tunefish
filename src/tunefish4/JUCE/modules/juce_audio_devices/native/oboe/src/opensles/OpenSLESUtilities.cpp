@@ -24,42 +24,42 @@ namespace oboe {
 
 const char *getSLErrStr(SLresult code) {
     switch (code) {
-        case SL_RESULT_SUCCESS:
+        case 0:
             return "SL_RESULT_SUCCESS";
-        case SL_RESULT_PRECONDITIONS_VIOLATED:
-            return "SL_RESULT_PRECONDITIONS_VIOLATED";
-        case SL_RESULT_PARAMETER_INVALID:
+        case 1:
+            return "SL_RESULT_PRECONDITIONS_VIOLATE";
+        case 2:
             return "SL_RESULT_PARAMETER_INVALID";
-        case SL_RESULT_MEMORY_FAILURE:
+        case 3:
             return "SL_RESULT_MEMORY_FAILURE";
-        case SL_RESULT_RESOURCE_ERROR:
+        case 4:
             return "SL_RESULT_RESOURCE_ERROR";
-        case SL_RESULT_RESOURCE_LOST:
+        case 5:
             return "SL_RESULT_RESOURCE_LOST";
-        case SL_RESULT_IO_ERROR:
+        case 6:
             return "SL_RESULT_IO_ERROR";
-        case SL_RESULT_BUFFER_INSUFFICIENT:
+        case 7:
             return "SL_RESULT_BUFFER_INSUFFICIENT";
-        case SL_RESULT_CONTENT_CORRUPTED:
+        case 8:
             return "SL_RESULT_CONTENT_CORRUPTED";
-        case SL_RESULT_CONTENT_UNSUPPORTED:
+        case 9:
             return "SL_RESULT_CONTENT_UNSUPPORTED";
-        case SL_RESULT_CONTENT_NOT_FOUND:
+        case 10:
             return "SL_RESULT_CONTENT_NOT_FOUND";
-        case SL_RESULT_PERMISSION_DENIED:
+        case 11:
             return "SL_RESULT_PERMISSION_DENIED";
-        case SL_RESULT_FEATURE_UNSUPPORTED:
+        case 12:
             return "SL_RESULT_FEATURE_UNSUPPORTED";
-        case SL_RESULT_INTERNAL_ERROR:
+        case 13:
             return "SL_RESULT_INTERNAL_ERROR";
-        case SL_RESULT_UNKNOWN_ERROR:
+        case 14:
             return "SL_RESULT_UNKNOWN_ERROR";
-        case SL_RESULT_OPERATION_ABORTED:
+        case 15:
             return "SL_RESULT_OPERATION_ABORTED";
-        case SL_RESULT_CONTROL_LOST:
+        case 16:
             return "SL_RESULT_CONTROL_LOST";
         default:
-            return "Unknown SL error";
+            return "Unknown error";
     }
 }
 
@@ -83,9 +83,6 @@ SLuint32 OpenSLES_ConvertFormatToRepresentation(AudioFormat format) {
             return SL_ANDROID_PCM_REPRESENTATION_SIGNED_INT;
         case AudioFormat::Float:
             return SL_ANDROID_PCM_REPRESENTATION_FLOAT;
-        case AudioFormat::I24:
-        case AudioFormat::I32:
-        case AudioFormat::IEC61937:
         case AudioFormat::Invalid:
         case AudioFormat::Unspecified:
         default:

@@ -18,12 +18,14 @@
 #include "FlowGraphNode.h"
 #include "MonoToMultiConverter.h"
 
-using namespace FLOWGRAPH_OUTER_NAMESPACE::flowgraph;
+using namespace flowgraph;
 
-MonoToMultiConverter::MonoToMultiConverter(int32_t outputChannelCount)
+MonoToMultiConverter::MonoToMultiConverter(int32_t channelCount)
         : input(*this, 1)
-        , output(*this, outputChannelCount) {
+        , output(*this, channelCount) {
 }
+
+MonoToMultiConverter::~MonoToMultiConverter() { }
 
 int32_t MonoToMultiConverter::onProcess(int32_t numFrames) {
     const float *inputBuffer = input.getBuffer();
