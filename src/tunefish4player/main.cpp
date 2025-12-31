@@ -27,7 +27,7 @@ along with Tunefish.  If not, see <http://www.gnu.org/licenses/>.
 #include "tf4player.hpp"
 // #include "tf4dx.hpp"
 
-#include "../../media/tf4modules/no_remorse.tfm.h"
+#include "../../media/tf4modules/test--2-notes.tfm.h"
 
 #if defined(eRELEASE)
 
@@ -255,7 +255,7 @@ int main()
 	eU32 songSamples = eTfPlayerRecordToBuffer(player, songLength, &songBuffer);
 	eTfPlayerReverseBuffer(songBuffer, songSamples);
 
-	FILE *fp1 = fopen("no_remorse.wav", "wb");
+	FILE *fp1 = fopen("test--2-notes.wav", "wb");
 
 	// Write WAV header.
 	fwrite("RIFF", 1, 4, fp1);
