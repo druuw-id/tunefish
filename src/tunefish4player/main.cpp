@@ -19,13 +19,13 @@ along with Tunefish.  If not, see <http://www.gnu.org/licenses/>.
 ---------------------------------------------------------------------
 */
 
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <windows.h>
+// #define WIN32_LEAN_AND_MEAN
+// #define NOMINMAX
+// #include <windows.h>
 #include <stdio.h>
 
 #include "tf4player.hpp"
-#include "tf4dx.hpp"
+// #include "tf4dx.hpp"
 
 #include "../../media/tf4modules/no_remorse.tfm.h"
 
@@ -177,11 +177,12 @@ void eGlobalsStaticsFree()
 #endif
 }
 
-#ifdef eDEBUG
-eInt WINAPI WinMain(HINSTANCE inst, HINSTANCE prevInst, eChar *cmdLine, eInt showCmd)
-#else
-void WinMainCRTStartup()
-#endif
+// #ifdef eDEBUG
+// eInt WINAPI WinMain(HINSTANCE inst, HINSTANCE prevInst, eChar *cmdLine, eInt showCmd)
+// #else
+// void WinMainCRTStartup()
+// #endif
+int main()
 {
 	eSimdSetArithmeticFlags(eSAF_RTN | eSAF_FTZ);
 	eGlobalsStaticsInit();
@@ -234,23 +235,62 @@ void WinMainCRTStartup()
 	fclose(fp);
     */
 
-	// playback
-	// --------------------------------------------------------------------------------------
-	eTfDxInit(sampleRate);
-	eTfDxAddPlayer(player);
-	eTfPlayerStart(player, 0.0f);
+	// // playback
+	// // --------------------------------------------------------------------------------------
+	// eTfDxInit(sampleRate);
+	// eTfDxAddPlayer(player);
+	// eTfPlayerStart(player, 0.0f);
 
-	MessageBox(nullptr, "Playing: No remorse\n\nVisit www.tunefish-synth.com", "Tunefish4", 0);
+	// // MessageBox(nullptr, "Playing: No remorse\n\nVisit www.tunefish-synth.com", "Tunefish4", 0);
+	// printf("Playing: No remorse\n\nVisit www.tunefish-synth.com\n");
+	// printf("Press ENTER to stop playback...\n");
+	// getchar();
 
-	eTfPlayerStop(player);
-	eTfDxRemovePlayer(player);
-	eTfDxShutdown();
+	// eTfPlayerStop(player);
+	// eTfDxRemovePlayer(player);
+	// eTfDxShutdown();
 
-	//delete[] songBuffer;
+	eS16 *songBuffer = nullptr;
+	const eF32 songLength = eTfPlayerGetSongLength(player);
+	eU32 songSamples = eTfPlayerRecordToBuffer(player, songLength, &songBuffer);
+	eTfPlayerReverseBuffer(songBuffer, songSamples);
+
+	FILE *fp1 = fopen("no_remorse.wav", "wb");
+
+	// Write WAV header.
+	fwrite("RIFF", 1, 4, fp1);
+	eU32 chunkSize = 36 + songSamples * sizeof(eS16);
+	fwrite(&chunkSize, sizeof(eU32), 1, fp1);
+	fwrite("WAVE", 1, 4, fp1);
+	fwrite("fmt ", 1, 4, fp1);
+	eU32 subChunk1Size = 16;
+	fwrite(&subChunk1Size, sizeof(eU32), 1, fp1);
+	eU16 audioFormat = 1; // PCM
+	fwrite(&audioFormat, sizeof(eU16), 1, fp1);
+	eU16 numChannels = 1; // mono
+	fwrite(&numChannels, sizeof(eU16), 1, fp1);
+	eU32 sampleRateU32 = sampleRate;
+	fwrite(&sampleRateU32, sizeof(eU32), 1, fp1);
+	eU32 byteRate = sampleRate * sizeof(eS16) * 1; // mono
+	fwrite(&byteRate, sizeof(eU32), 1, fp1);
+	eU16 blockAlign = sizeof(eS16) * 1; // mono
+	fwrite(&blockAlign, sizeof(eU16), 1, fp1);
+	eU16 bitsPerSample = sizeof(eS16) * 8;
+	fwrite(&bitsPerSample, sizeof(eU16), 1, fp1);
+	fwrite("data", 1, 4, fp1);
+	eU32 subChunk2Size = songSamples * sizeof(eS16);
+	fwrite(&subChunk2Size, sizeof(eU32), 1, fp1);
+
+	// Write song samples.
+	fwrite(songBuffer, sizeof(eS16), songSamples, fp1);
+
+	fclose(fp1);
+
+	delete[] songBuffer;
 
 	eGlobalsStaticsFree();
-	ExitProcess(0);
-#ifdef eDEBUG
+	// ExitProcess(0);
+// #ifdef eDEBUG
 	return 0;
-#endif
+// #endif
 }

@@ -20,9 +20,9 @@ along with Tunefish.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <stdio.h>
-#define NOMINMAX
-#include <windows.h>
-#include <dsound.h>
+// #define NOMINMAX
+// #include <windows.h>
+// #include <dsound.h>
 
 #ifdef eENIGMA
 #include "synth.hpp"
